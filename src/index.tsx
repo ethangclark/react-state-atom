@@ -29,9 +29,16 @@ export function createAtom<T>(base: T): {
   resetters.push(() => set(base));
 
   function use() {
-    const [s, setS] = React.useState(state);
-    React.useEffect(() => subscribe(setS), []);
-    return s;
+    // using `() => state` instead of `state` in case `state` is a function
+    const [hookState, setHookState] = React.useState(() => state);
+    React.useEffect(() => {
+      const unsubscribe = subscribe((s) => {
+        // using `() => s` instead of `s` in case `s` is a function
+        setHookState(() => s);
+      });
+      return unsubscribe;
+    }, []);
+    return hookState;
   }
 
   return { get, set, subscribe, use };

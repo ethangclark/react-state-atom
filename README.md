@@ -8,7 +8,7 @@
 
 - Provider-free
 - Hook-based
-- Tiny (210 bytes)
+- Tiny (921 bytes uncompressed)
 - TypeScript-first
 - Test-friendly
 - Non-extensible API - no rabbit holes
