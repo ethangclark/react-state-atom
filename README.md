@@ -8,7 +8,7 @@
 
 - Provider-free
 - Hook-based
-- Tiny (985 bytes pre-optimization)
+- Tiny (210 bytes)
 - TypeScript-first
 - Test-friendly
 - Non-extensible API - no rabbit holes
@@ -38,7 +38,7 @@ Sets the value of the atom. Triggers updates in hooks and subscribers.
 
 ### Atom.subscribe(cb: (state: T, prev: T) => void): () => void
 
-Subscribes a callback to an atom. The callback is called every time the value of the atom changes. Returns an `unsubscribe` function that terminates the subscription.
+Subscribes a callback function to an atom. The callback is called every time the value of the atom changes. Returns an `unsubscribe` function that terminates the subscription.
 
 ### Atom.use(): T
 
@@ -63,7 +63,7 @@ async function reloadUsers() {
 }
 
 async function createUser(params: UserParams) {
-  const user = await axios.post('/user', params).data as User
+  const user = (await axios.post('/user', params)).data as User
   usersAtom.set([...usersAtom.get(), user]) // note
 }
 
@@ -94,3 +94,13 @@ const Users = () => {
   )
 }
 ```
+
+## Global state
+
+"Global state" is another name for "application state", which we need in order to write so-called "stateful applications".
+
+Global state becomes a problem when your program doesn't know when or how to react to it changing -- in other words, in non-reactive contexts. Luckily for you, you're using React, which allows you to use global state in a productive, non-horrible way via reactive patterns like hooks.
+
+So don't fear global state. Embrace it!
+
+![global state meme](https://github.com/ethangclark/react-state-atom/blob/main/ohio.webp?raw=true)
