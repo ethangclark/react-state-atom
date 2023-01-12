@@ -30,7 +30,6 @@ export const ExampleApp = () => {
       <div>Count: {count}</div>
       <Counter1 />
       <Counter2 />
-      <button onClick={countAtom.reset}>Reset</button>
       <button
         onClick={() => {
           unsubscribeRef.current();
@@ -40,7 +39,7 @@ export const ExampleApp = () => {
         Subscribe
       </button>
       <button onClick={() => unsubscribeRef.current()}>Unsubscribe</button>
-      <button onClick={resetAtoms}>Reset all</button>
+      <button onClick={resetAtoms}>Reset</button>
     </div>
   );
 };

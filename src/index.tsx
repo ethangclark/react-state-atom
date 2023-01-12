@@ -4,7 +4,6 @@ const resetters: Array<Function> = [];
 
 export function createAtom<T>(base: T): {
   get: () => T;
-  reset: () => void;
   set: (state: T) => void;
   subscribe: (subFn: (state: T, prev: T) => void) => () => void;
   use: () => T;
@@ -27,8 +26,7 @@ export function createAtom<T>(base: T): {
     subscribers.forEach((subscriber) => subscriber(state, prev));
   }
 
-  const reset = () => set(base);
-  resetters.push(reset);
+  resetters.push(() => set(base));
 
   function use() {
     const [s, setS] = React.useState(state);
@@ -36,7 +34,7 @@ export function createAtom<T>(base: T): {
     return s;
   }
 
-  return { get, reset, set, subscribe, use };
+  return { get, set, subscribe, use };
 }
 
 export function resetAtoms() {

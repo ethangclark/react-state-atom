@@ -28,10 +28,6 @@ Creates a global state atom.
 
 Returns the current value of the atom.
 
-### Atom.reset(): void
-
-Resets the value of the atom to `base` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers.
-
 ### Atom.set(value: T): void
 
 Sets the value of the atom. Triggers updates in hooks and subscribers.
@@ -46,7 +42,7 @@ Use the atom as a hook. Returns the value of the atom. The value is updated ever
 
 ### resetAtoms(): void
 
-Resets the state of all atoms that have been created. Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
+Resets the state of all created atoms to `base` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
 
 ## Example
 
@@ -57,7 +53,6 @@ const usersAtom = createAtom<User[]>([])
 const selectedIdAtom = createAtom<number | null>(null)
 
 async function reloadUsers() {
-  usersAtom.reset() // note
   const users = (await axios.get('/users')).data as User
   users.set(users) // note
 }
