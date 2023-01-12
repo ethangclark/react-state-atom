@@ -2,37 +2,33 @@ import * as React from 'react';
 
 const resetters: Array<Function> = [];
 
-export function createAtom<State extends { [key: string]: any }>(
-  initial: State
-): {
-  get: () => State;
+export function createAtom<T>(base: T): {
+  get: () => T;
   reset: () => void;
-  set: (state: State) => void;
-  use: () => State;
-  subscribe: (subFn: (state: State, previous: State) => void) => () => void;
+  set: (state: T) => void;
+  subscribe: (subFn: (state: T, prev: T) => void) => () => void;
+  use: () => T;
 } {
-  let state = initial;
-
-  const reset = () => {
-    state = initial;
-  };
-  resetters.push(reset);
+  let state = base;
 
   const get = () => state;
 
-  let subscribers = new Set<(state: State, previous: State) => void>();
-  function subscribe(subscriber: (state: State, previous: State) => void) {
+  let subscribers = new Set<(state: T, prev: T) => void>();
+  function subscribe(subscriber: (state: T, prev: T) => void) {
     subscribers.add(subscriber);
     return () => {
       subscribers.delete(subscriber);
     };
   }
 
-  function set(s: State) {
-    const previous = state;
+  function set(s: T) {
+    const prev = state;
     state = s;
-    subscribers.forEach((subscriber) => subscriber(state, previous));
+    subscribers.forEach((subscriber) => subscriber(state, prev));
   }
+
+  const reset = () => set(base);
+  resetters.push(reset);
 
   function use() {
     const [s, setS] = React.useState(state);
@@ -40,7 +36,7 @@ export function createAtom<State extends { [key: string]: any }>(
     return s;
   }
 
-  return { get, reset, set, use, subscribe };
+  return { get, reset, set, subscribe, use };
 }
 
 export function resetAtoms() {

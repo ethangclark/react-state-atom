@@ -1,160 +1,96 @@
-# DTS React User Guide
+# react-state-atom
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with DTS. Let’s get you oriented with what’s here and how to use it.
+`react-state-atom` is a global state management solution for React + TypeScript
 
-> This DTS setup is meant for developing React component libraries (not apps!) that can be published to NPM. If you’re looking to build a React-based app, you should use `create-react-app`, `razzle`, `nextjs`, `gatsby`, or `react-static`.
+## Pros and cons of react-state-atom
 
-> If you’re new to TypeScript and React, checkout [this handy cheatsheet](https://github.com/sw-yx/react-typescript-cheatsheet/)
+### Pros
 
-## Commands
+- Provider-free
+- Hook-based
+- Tiny (985 bytes pre-optimization)
+- TypeScript-first
+- Test-friendly
+- Non-extensible API - no rabbit holes
 
-DTS scaffolds your new library inside `/src`, and also sets up a [Vite-based](https://vitejs.dev) playground for it inside `/example`.
+### Cons
 
-The recommended workflow is to run DTS in one terminal:
+- Lower hypothetical performance ceiling than recursive-proxy-based solutions like Valtio or Mobx
+- No support for Redux devtools
 
-```bash
-npm start # or yarn start
-```
+## API
 
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
+### createAtom<T>(base: T): Atom<T>
 
-Then run the example inside another:
+Creates a global state atom.
 
-```bash
-cd example
-npm i # or yarn to install dependencies
-npm start # or yarn start
-```
+### Atom.get(): T
 
-The default example imports and live reloads whatever is in `/dist`, so if you are seeing an out of date component, make sure DTS is running in watch mode like we recommend above. 
+Returns the current value of the atom.
 
-To do a one-off build, use `npm run build` or `yarn build`.
+### Atom.reset(): void
 
-To run tests, use `npm test` or `yarn test`.
+Resets the value of the atom to `base` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers.
 
-## Configuration
+### Atom.set(value: T): void
 
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
+Sets the value of the atom. Triggers updates in hooks and subscribers.
 
-### Jest
+### Atom.subscribe(cb: (state: T, prev: T) => void): () => void
 
-Jest tests are set up to run with `npm test` or `yarn test`.
+Subscribes a callback to an atom. The callback is called every time the value of the atom changes. Returns an `unsubscribe` function that terminates the subscription.
 
-### Bundle analysis
+### Atom.use(): T
 
-Calculates the real cost of your library using [size-limit](https://github.com/ai/size-limit) with `npm run size` and visulize it with `npm run analyze`.
+Use the atom as a hook. Returns the value of the atom. The value is updated every time the value of the atom changes.
 
-#### Setup Files
+### resetAtoms(): void
 
-This is the folder structure we set up for you:
+Resets the state of all atoms that have been created. Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
 
-```txt
-/example
-  index.html
-  index.tsx       # test your component here in a demo app
-  package.json
-  tsconfig.json
-/src
-  index.tsx       # EDIT THIS
-/test
-  index.test.tsx  # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
-```
+## Example
 
-#### React Testing Library
+```tsx
+import { createAtom } from 'react-state-atom'
 
-We do not set up `react-testing-library` for you yet, we welcome contributions and documentation on this.
+const usersAtom = createAtom<User[]>([])
+const selectedIdAtom = createAtom<number | null>(null)
 
-### Rollup
+async function reloadUsers() {
+  usersAtom.reset() // note
+  const users = (await axios.get('/users')).data as User
+  users.set(users) // note
+}
 
-DTS uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
+async function createUser(params: UserParams) {
+  const user = await axios.post('/user', params).data as User
+  usersAtom.set([...usersAtom.get(), user]) // note
+}
 
-### TypeScript
+function useSelectedUser() {
+  const users = usersAtom.use() // note
+  const userId = selectedIdAtom.use() // note
 
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
+  return React.useMemo(() => {
+    return users.find(u => u.id === userId) || null
+  }, [users, userId])
+}
 
-## Continuous Integration
+const Users = () => {
+  const users = usersAtom.use() // note
+  const selectedUser = useSelectedUser()
 
-### GitHub Actions
+  React.useEffect(() => {
+    reloadUsers()
+  }, [])
 
-Two actions are added by default:
-
-- `main` which installs deps w/ cache, lints, tests, and builds on all pushes against a Node and OS matrix
-- `size` which comments cost comparison of your library on every pull request using [`size-limit`](https://github.com/ai/size-limit)
-
-## Optimizations
-
-Please see the main `dts` [optimizations docs](https://github.com/weiran-zsd/dts-cli#optimizations). In particular, know that you can take advantage of development-only optimizations:
-
-```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
-
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
+  return (
+    <UserDisplayArea>
+      {selectedUser && <SelectedUserDisplay user={selectedUser} />}
+      {users.map(user => (
+        <UserDisplay key={user.id} user={user} />
+      ))}
+    </UserDisplayArea>
+  )
 }
 ```
-
-You can also choose to install and use [invariant](https://github.com/weiran-zsd/dts-cli#invariant) and [warning](https://github.com/weiran-zsd/dts-cli#warning) functions.
-
-## Module Formats
-
-CJS, ESModules, and UMD module formats are supported.
-
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
-
-## Deploying the Example Playground
-
-The Playground is just a simple [Vite](https://vitejs.dev) app, you can deploy it anywhere you would normally deploy that. Here are some guidelines for **manually** deploying with the Netlify CLI (`npm i -g netlify-cli`):
-
-```bash
-cd example # if not already in the example folder
-npm run build # builds to dist
-netlify deploy # deploy the dist folder
-```
-
-Alternatively, if you already have a git repo connected, you can set up continuous deployment with Netlify:
-
-```bash
-netlify init
-# build command: yarn build && cd example && yarn && yarn build
-# directory to deploy: example/dist
-# pick yes for netlify.toml
-```
-
-## Named Exports
-
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
-
-## Including Styles
-
-There are many ways to ship styles, including with CSS-in-JS. DTS has no opinion on this, configure how you like.
-
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
-
-## Publishing to NPM
-
-We recommend using [np](https://github.com/sindresorhus/np).
-
-## Usage with Lerna
-
-When creating a new package with DTS within a project set up with Lerna, you might encounter a `Cannot resolve dependency` error when trying to run the `example` project. To fix that you will need to make changes to the `package.json` file _inside the `example` directory_.
-
-The problem is that due to the nature of how dependencies are installed in Lerna projects, the aliases in the example project's `package.json` might not point to the right place, as those dependencies might have been installed in the root of your Lerna project.
-
-Change the `alias` to point to where those packages are actually installed. This depends on the directory structure of your Lerna project, so the actual path might be different from the diff below.
-
-```diff
-   "alias": {
--    "react": "../node_modules/react",
--    "react-dom": "../node_modules/react-dom"
-+    "react": "../../../node_modules/react",
-+    "react-dom": "../../../node_modules/react-dom"
-   },
-```
-
-An alternative to fixing this problem would be to remove aliases altogether and define the dependencies referenced as aliases as dev dependencies instead. [However, that might cause other problems.](https://github.com/formium/tsdx/issues/64)
