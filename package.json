@@ -1,6 +1,6 @@
 {
   "name": "react-state-atom",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "Ethan Gregory Clark",
   "main": "dist/index.js",
