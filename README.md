@@ -8,7 +8,7 @@
 
 - Provider-free
 - Hook-based
-- Tiny (921 bytes minified, 408 bytes Brotli'd)
+- Tiny (942 bytes minified, 409 bytes Brotli'd)
 - TypeScript-first
 - Test-friendly
 - Non-extensible API - no rabbit holes
@@ -20,29 +20,29 @@
 
 ## API
 
-### createAtom<T>(base: T): Atom<T>
+### createAtom<T>(initial: T): Atom<T>
 
 Creates a global state atom.
 
-### Atom.get(): T
+### Atom.getValue(): T
 
 Returns the current value of the atom.
 
-### Atom.set(value: T): void
+### Atom.setValue(value: T): void
 
 Sets the value of the atom. Triggers updates in hooks and subscribers.
 
-### Atom.subscribe(cb: (state: T, prev: T) => void): () => void
+### Atom.subscribe(cb: (value: T, prev: T) => void): () => void
 
 Subscribes a callback function to an atom. The callback is called every time the value of the atom changes. Returns an `unsubscribe` function that terminates the subscription.
 
-### Atom.use(): T
+### Atom.useValue(): T
 
 Use the atom as a hook. Returns the value of the atom. The value is updated every time the value of the atom changes.
 
-### resetAtoms(): void
+### resetGlobalState(): void
 
-Resets the state of all created atoms to `base` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
+Resets the value of all created atoms to `initial` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
 
 ## Example
 
@@ -54,17 +54,17 @@ const selectedIdAtom = createAtom<number | null>(null)
 
 async function reloadUsers() {
   const users = (await axios.get('/users')).data as User
-  users.set(users) // note
+  users.setValue(users) // note
 }
 
 async function createUser(params: UserParams) {
   const user = (await axios.post('/user', params)).data as User
-  usersAtom.set([...usersAtom.get(), user]) // note
+  usersAtom.setValue([...usersAtom.get(), user]) // note
 }
 
 function useSelectedUser() {
-  const users = usersAtom.use() // note
-  const userId = selectedIdAtom.use() // note
+  const users = usersAtom.useValue() // note
+  const userId = selectedIdAtom.useValue() // note
 
   return React.useMemo(() => {
     return users.find(u => u.id === userId) || null
@@ -72,7 +72,7 @@ function useSelectedUser() {
 }
 
 const Users = () => {
-  const users = usersAtom.use() // note
+  const users = usersAtom.useValue() // note
   const selectedUser = useSelectedUser()
 
   React.useEffect(() => {

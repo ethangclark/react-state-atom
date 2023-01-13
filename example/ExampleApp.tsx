@@ -1,27 +1,27 @@
 import * as React from 'react';
-import { createAtom, resetAtoms } from '../src/index';
+import { createAtom, resetGlobalState } from '../src/index';
 
 const countAtom = createAtom(0);
 
 const Counter1 = () => {
-  const count = countAtom.use();
+  const count = countAtom.useValue();
   return (
-    <button onClick={() => countAtom.set(countAtom.get() + 1)}>
+    <button onClick={() => countAtom.setValue(countAtom.getValue() + 1)}>
       Add 1 to {count}
     </button>
   );
 };
 const Counter2 = () => {
-  const count = countAtom.use();
+  const count = countAtom.useValue();
   return (
-    <button onClick={() => countAtom.set(countAtom.get() + 2)}>
+    <button onClick={() => countAtom.setValue(countAtom.getValue() + 2)}>
       Add 2 to {count}
     </button>
   );
 };
 
 export const ExampleApp = () => {
-  const count = countAtom.use();
+  const count = countAtom.useValue();
   const unsubscribeRef = React.useRef(() => {});
   return (
     <div
@@ -39,7 +39,7 @@ export const ExampleApp = () => {
         Subscribe
       </button>
       <button onClick={() => unsubscribeRef.current()}>Unsubscribe</button>
-      <button onClick={resetAtoms}>Reset</button>
+      <button onClick={resetGlobalState}>Reset</button>
     </div>
   );
 };
