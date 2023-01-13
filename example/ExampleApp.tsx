@@ -20,13 +20,37 @@ const Counter2 = () => {
   );
 };
 
+const otherValueAtom = createAtom(9900);
+
+const HybridState = ({ onRender }: { onRender: Function }) => {
+  const count = countAtom.useValue();
+  const otherValue = otherValueAtom.useValue();
+
+  onRender();
+
+  return (
+    <button
+      onClick={() => otherValueAtom.setValue(otherValueAtom.getValue() + 1)}
+    >
+      {count}/{otherValue} (click to increment latter)
+    </button>
+  );
+};
+
 export const ExampleApp = ({
   onValue = console.log,
+  onCounterRender = () => {},
+  onHybridStateRender = () => {},
 }: {
   onValue?: (value: number, prev: number) => void;
+  onCounterRender?: Function;
+  onHybridStateRender?: Function;
 }) => {
   const count = countAtom.useValue();
   const unsubscribeRef = React.useRef(() => {});
+
+  onCounterRender();
+
   return (
     <div
       style={{ width: '100%', display: 'flex', justifyContent: 'space-around' }}
@@ -44,6 +68,7 @@ export const ExampleApp = ({
       </button>
       <button onClick={() => unsubscribeRef.current()}>Unsubscribe</button>
       <button onClick={resetGlobalState}>Reset</button>
+      <HybridState onRender={onHybridStateRender} />
     </div>
   );
 };

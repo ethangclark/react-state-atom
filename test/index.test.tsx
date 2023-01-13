@@ -3,40 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { ExampleApp } from '../example/ExampleApp';
 import { createAtom, resetGlobalState } from '../src';
 
-describe('ExampleApp', () => {
-  it('renders without crashing', () => {
-    render(<ExampleApp />);
-  });
-  it('updates and resets states across components', async () => {
-    render(<ExampleApp />);
-    await screen.findByText('Count: 0');
-    await userEvent.click(screen.getByText('Add 1 to 0'));
-    await screen.findByText('Count: 1');
-    await userEvent.click(screen.getByText('Add 2 to 1'));
-    await screen.findByText('Count: 3');
-    await userEvent.click(screen.getByText('Reset'));
-    await screen.findByText('Count: 0');
-  });
-  it('calls subscription and unsubscribes', async () => {
-    const onValue = jest.fn();
-    render(<ExampleApp onValue={onValue} />);
-    await userEvent.click(screen.getByText('Add 1 to 0'));
-    expect(onValue).not.toHaveBeenCalled();
-    await userEvent.click(screen.getByText('Subscribe'));
-    await userEvent.click(screen.getByText('Add 1 to 1'));
-    expect(onValue).toHaveBeenCalledWith(2, 1);
-    await userEvent.click(screen.getByText('Add 2 to 2'));
-    expect(onValue).toHaveBeenCalledWith(4, 2);
-    expect(onValue).toHaveBeenCalledTimes(2);
-    await userEvent.click(screen.getByText('Unsubscribe'));
-    await userEvent.click(screen.getByText('Add 2 to 4'));
-    expect(onValue).toHaveBeenCalledTimes(2);
-    await userEvent.click(screen.getByText('Subscribe'));
-    await userEvent.click(screen.getByText('Add 2 to 6'));
-    expect(onValue).toHaveBeenCalledTimes(3);
-  });
-});
-
 describe('atom', () => {
   it('reflects set value', () => {
     const a = createAtom(0);
@@ -82,5 +48,70 @@ describe('resetAtoms', () => {
     resetGlobalState();
     expect(a.getValue()).toBe(2);
     expect(b.getValue()).toBe(3);
+  });
+});
+
+describe('ExampleApp (hooks use example)', () => {
+  beforeEach(() => {
+    resetGlobalState();
+  });
+  it('renders without crashing', () => {
+    render(<ExampleApp />);
+  });
+  it('updates and resets states across components', async () => {
+    render(<ExampleApp />);
+    await screen.findByText('Count: 0');
+    await userEvent.click(screen.getByText('Add 1 to 0'));
+    await screen.findByText('Count: 1');
+    await userEvent.click(screen.getByText('Add 2 to 1'));
+    await screen.findByText('Count: 3');
+    await userEvent.click(screen.getByText('Reset'));
+    await screen.findByText('Count: 0');
+  });
+  it('calls subscription and unsubscribes', async () => {
+    const onValue = jest.fn();
+    render(<ExampleApp onValue={onValue} />);
+    await userEvent.click(screen.getByText('Add 1 to 0'));
+    expect(onValue).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByText('Subscribe'));
+    await userEvent.click(screen.getByText('Add 1 to 1'));
+    expect(onValue).toHaveBeenCalledWith(2, 1);
+    await userEvent.click(screen.getByText('Add 2 to 2'));
+    expect(onValue).toHaveBeenCalledWith(4, 2);
+    expect(onValue).toHaveBeenCalledTimes(2);
+    await userEvent.click(screen.getByText('Unsubscribe'));
+    await userEvent.click(screen.getByText('Add 2 to 4'));
+    expect(onValue).toHaveBeenCalledTimes(2);
+    await userEvent.click(screen.getByText('Subscribe'));
+    await userEvent.click(screen.getByText('Add 2 to 6'));
+    expect(onValue).toHaveBeenCalledTimes(3);
+  });
+  it('only rerenders necessary components', async () => {
+    const onCounterRender = jest.fn();
+    const onHybridStateRender = jest.fn();
+    render(
+      <ExampleApp
+        onCounterRender={onCounterRender}
+        onHybridStateRender={onHybridStateRender}
+      />
+    );
+    expect(onCounterRender).toHaveBeenCalledTimes(1);
+    expect(onHybridStateRender).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByText('Add 1 to 0'));
+    expect(onCounterRender).toHaveBeenCalledTimes(2);
+    expect(onHybridStateRender).toHaveBeenCalledTimes(2);
+    await userEvent.click(
+      screen.getByText('1/9900 (click to increment latter)')
+    );
+    expect(onCounterRender).toHaveBeenCalledTimes(2);
+    expect(onHybridStateRender).toHaveBeenCalledTimes(3);
+    await userEvent.click(screen.getByText('Add 2 to 1'));
+    expect(onCounterRender).toHaveBeenCalledTimes(3);
+    expect(onHybridStateRender).toHaveBeenCalledTimes(4);
+    await await userEvent.click(
+      screen.getByText('3/9901 (click to increment latter)')
+    );
+    expect(onHybridStateRender).toHaveBeenCalledTimes(5);
+    await screen.findByText('3/9902 (click to increment latter)');
   });
 });

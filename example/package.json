@@ -8,9 +8,6 @@
     "start": "vite",
     "build": "vite build"
   },
-  "dependencies": {
-    "react-app-polyfill": "^3.0.0"
-  },
   "alias": {
     "react": "../node_modules/react",
     "react-dom": "../node_modules/react-dom/profiling",
@@ -19,8 +16,8 @@
   "devDependencies": {
     "@types/react": "^17.0.47",
     "@types/react-dom": "^17.0.17",
+    "typescript": "^4",
     "vite": "latest",
-    "vite-preset-react": "latest",
-    "typescript": "^4"
+    "vite-preset-react": "latest"
   }
 }
