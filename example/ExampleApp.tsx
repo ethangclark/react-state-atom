@@ -20,7 +20,11 @@ const Counter2 = () => {
   );
 };
 
-export const ExampleApp = () => {
+export const ExampleApp = ({
+  onValue = console.log,
+}: {
+  onValue?: (value: number, prev: number) => void;
+}) => {
   const count = countAtom.useValue();
   const unsubscribeRef = React.useRef(() => {});
   return (
@@ -33,7 +37,7 @@ export const ExampleApp = () => {
       <button
         onClick={() => {
           unsubscribeRef.current();
-          unsubscribeRef.current = countAtom.subscribe(console.log);
+          unsubscribeRef.current = countAtom.subscribe(onValue);
         }}
       >
         Subscribe

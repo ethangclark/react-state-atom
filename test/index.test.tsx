@@ -1,13 +1,39 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ExampleApp } from '../example/ExampleApp';
 import { createAtom, resetGlobalState } from '../src';
 
 describe('ExampleApp', () => {
   it('renders without crashing', () => {
-    const div = document.createElement('div');
-    ReactDOM.render(<ExampleApp />, div);
-    ReactDOM.unmountComponentAtNode(div);
+    render(<ExampleApp />);
+  });
+  it('updates and resets states across components', async () => {
+    render(<ExampleApp />);
+    await screen.findByText('Count: 0');
+    await userEvent.click(screen.getByText('Add 1 to 0'));
+    await screen.findByText('Count: 1');
+    await userEvent.click(screen.getByText('Add 2 to 1'));
+    await screen.findByText('Count: 3');
+    await userEvent.click(screen.getByText('Reset'));
+    await screen.findByText('Count: 0');
+  });
+  it('calls subscription and unsubscribes', async () => {
+    const onValue = jest.fn();
+    render(<ExampleApp onValue={onValue} />);
+    await userEvent.click(screen.getByText('Add 1 to 0'));
+    expect(onValue).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByText('Subscribe'));
+    await userEvent.click(screen.getByText('Add 1 to 1'));
+    expect(onValue).toHaveBeenCalledWith(2, 1);
+    await userEvent.click(screen.getByText('Add 2 to 2'));
+    expect(onValue).toHaveBeenCalledWith(4, 2);
+    expect(onValue).toHaveBeenCalledTimes(2);
+    await userEvent.click(screen.getByText('Unsubscribe'));
+    await userEvent.click(screen.getByText('Add 2 to 4'));
+    expect(onValue).toHaveBeenCalledTimes(2);
+    await userEvent.click(screen.getByText('Subscribe'));
+    await userEvent.click(screen.getByText('Add 2 to 6'));
+    expect(onValue).toHaveBeenCalledTimes(3);
   });
 });
 
