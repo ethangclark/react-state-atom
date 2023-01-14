@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ExampleApp } from '../example/ExampleApp';
-import { createAtom, resetGlobalState } from '../src';
+import { atom, resetGlobalState } from '../src';
 
 describe('atom', () => {
   it('reflects set value', () => {
-    const a = createAtom(0);
+    const a = atom(0);
     expect(a.getValue()).toBe(0);
     a.setValue(a.getValue() + 1);
     expect(a.getValue()).toBe(1);
@@ -13,7 +13,7 @@ describe('atom', () => {
     expect(a.getValue()).toBe(3);
   });
   it('calls subscription appropriately', () => {
-    const a = createAtom(2);
+    const a = atom(2);
     const mock1 = jest.fn();
     a.subscribe(mock1);
     a.setValue(3);
@@ -26,7 +26,7 @@ describe('atom', () => {
     expect(mock2).toHaveBeenCalledWith(4, 3);
   });
   it('unsubscribes', () => {
-    const a = createAtom(2);
+    const a = atom(2);
     const mock1 = jest.fn();
     const unsub = a.subscribe(mock1);
     a.setValue(3);
@@ -41,8 +41,8 @@ describe('atom', () => {
 
 describe('resetAtoms', () => {
   it('resets all atoms', () => {
-    const a = createAtom(2);
-    const b = createAtom(3);
+    const a = atom(2);
+    const b = atom(3);
     a.setValue(4);
     b.setValue(5);
     resetGlobalState();

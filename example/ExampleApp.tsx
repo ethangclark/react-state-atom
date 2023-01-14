@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { createAtom, resetGlobalState } from '../src/index';
+import { atom, resetGlobalState } from '../src/index';
 
-const countAtom = createAtom(0);
+const countAtom = atom(0);
 
 const Counter1 = () => {
   const count = countAtom.useValue();
@@ -20,7 +20,7 @@ const Counter2 = () => {
   );
 };
 
-const otherValueAtom = createAtom(9900);
+const otherValueAtom = atom(9900);
 
 const HybridState = ({ onRender }: { onRender: Function }) => {
   const count = countAtom.useValue();

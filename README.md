@@ -2,13 +2,19 @@
 
 `react-state-atom` is a global state management solution for React + TypeScript
 
+## Concept
+
+An `Atom` is the smallest possible possible unit of state. It contains a value. An atom can be used as a hook via `.useValue()`, which returns the atom's value and updates the component every time the value changes.
+
+Unlike `React.useState()`, atoms are not scoped to a component -- they can be used by any component. This allows you avoid having to thread state around your app via props or context.
+
 ## Pros and cons of react-state-atom
 
 ### Pros
 
 - Provider-free
 - Hook-based
-- Tiny (942 bytes minified, 409 bytes Brotli'd)
+- Tiny (936 bytes minified, 413 bytes Brotli'd)
 - TypeScript-first
 - Test-friendly
 - Non-extensible API - no rabbit holes
@@ -20,7 +26,7 @@
 
 ## API
 
-### createAtom<T>(initial: T): Atom<T>
+### atom<T>(initial: T): Atom<T>
 
 Creates a global state atom.
 
@@ -42,15 +48,15 @@ Use the atom as a hook. Returns the value of the atom. The value is updated ever
 
 ### resetGlobalState(): void
 
-Resets the value of all created atoms to `initial` (the original value passed to `createAtom`). Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
+Resets the value of all created atoms to `initial` (the original value passed to `atom`). Triggers updates in hooks and subscribers. (Useful for testing and refresh-free logouts.)
 
 ## Example
 
 ```tsx
-import { createAtom } from 'react-state-atom'
+import { atom } from 'react-state-atom'
 
-const usersAtom = createAtom<User[]>([])
-const selectedIdAtom = createAtom<number | null>(null)
+const usersAtom = atom<User[]>([])
+const selectedIdAtom = atom<number | null>(null)
 
 async function reloadUsers() {
   const users = (await axios.get('/users')).data as User
@@ -88,6 +94,9 @@ const Users = () => {
     </UserDisplayArea>
   )
 }
+
+// other components are free use `usersAtom`, `selectedIdAtom`, `reloadUsers`,
+// `creatUser`, or `useSelectedUser` as desired. State will remain in syc across components.
 ```
 
 ## Global state

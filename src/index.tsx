@@ -2,7 +2,7 @@ import * as React from 'react';
 
 const resetters: Array<Function> = [];
 
-export function createAtom<T>(initial: T): {
+export function atom<T>(initial: T): {
   getValue: () => T;
   setValue: (value: T) => void;
   subscribe: (subFn: (value: T, prev: T) => void) => () => void;
