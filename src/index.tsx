@@ -29,16 +29,14 @@ export function atom<T>(initial: T): {
   resetters.push(() => setValue(initial));
 
   function useValue() {
-    // using `() => state` instead of `state` in case `state` is a function
-    const [hookState, setHookState] = React.useState(() => state);
+    const [, setRerender] = React.useState(1);
     React.useEffect(() => {
-      const unsubscribe = subscribe((value) => {
-        // using `() => value` instead of `value` in case `value` is a function
-        setHookState(() => value);
+      const unsubscribe = subscribe(() => {
+        setRerender((prev) => prev + 1);
       });
       return unsubscribe;
     }, []);
-    return hookState;
+    return state;
   }
 
   return { getValue, setValue, subscribe, useValue };
